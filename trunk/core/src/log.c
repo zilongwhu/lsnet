@@ -1,0 +1,109 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  log.c
+ *
+ *    Description:  log impl
+ *
+ *        Version:  1.0
+ *        Created:  2012年05月23日 18时50分02秒
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Zilong.Zhu (), zilong.whu@gmail.com
+ *        Company:  edu.whu
+ *
+ * =====================================================================================
+ */
+
+#include <unistd.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <pthread.h>
+#include "log.h"
+
+static const char *const s_level_name[] =
+{
+	"DEBUG ",
+	"TRACE ",
+	"NOTICE ",
+	"WARNING ",
+	"FATAL ",
+};
+
+static pthread_key_t g_log_key;
+
+struct log_sp
+{
+	char _buffer[4096];
+	time_t _last_tm;
+};
+
+static void create_log_key()
+{
+	int ret = pthread_key_create(&g_log_key, free);
+	if ( 0 != ret )
+	{
+		fprintf(stderr, "pthread_key_create error[%d].", ret);
+		exit(-1);
+	}
+}
+
+void err_warn(int level, const char *format, ...)
+{
+	static pthread_once_t s_log_once = PTHREAD_ONCE_INIT;
+
+	if ( level > 5 || level < 0 )
+	{
+		return ;
+	}
+	pthread_once(&s_log_once, create_log_key);
+	struct log_sp *st = (struct log_sp *)pthread_getspecific(g_log_key);
+	if ( NULL == st )
+	{
+		st = (struct log_sp *)malloc(sizeof(struct log_sp));
+		if ( NULL == st )
+		{
+			fprintf(stderr, "failed to alloc mem.");
+			return ;
+		}
+		int ret = pthread_setspecific(g_log_key, st);
+		if ( 0 != ret )
+		{
+			free(st);
+			fprintf(stderr, "pthread_setspecific error[%d].", ret);
+			return ;
+		}
+	}
+	time_t now = time(NULL);
+	if ( now > st->_last_tm )
+	{
+		st->_last_tm = now;
+		struct tm *p = localtime(&now);
+
+		strftime(st->_buffer, sizeof(st->_buffer), "[%Y-%m-%d %H:%M:%S] ", p);
+		st->_buffer[23] = '\0';
+	}
+	va_list vl;
+
+	strcpy(st->_buffer + 22, s_level_name[level]);
+	int len = strlen(st->_buffer);
+
+	va_start(vl, format);
+	int ret = vsnprintf(st->_buffer + len, sizeof(st->_buffer) - len, format, vl);
+	va_end(vl);
+
+	if ( ret < 0 )
+	{
+		ret = 0;
+	}
+	if ( ret >= sizeof(st->_buffer) - len )
+	{
+		ret = sizeof(st->_buffer) - len - 1;
+	}
+	st->_buffer[len + ret] = '\n';
+	write(STDERR_FILENO, st->_buffer, len + ret + 1);
+}
