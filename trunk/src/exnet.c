@@ -398,7 +398,7 @@ static void netstub_clean(struct _epex_in *h, netstub_t *stub)
 	}
 	if ( epoll_ctl(h->_ep_fd, EPOLL_CTL_DEL, stub->_sock_fd, NULL) < 0 )
 	{
-		WARNING("failed to add stub to epoll[%d], sock[%d], error[%s].", h->_ep_fd, stub->_sock_fd, strerror_t(errno));
+		WARNING("failed to remove stub from epoll[%d], sock[%d], error[%s].", h->_ep_fd, stub->_sock_fd, strerror_t(errno));
 	}
         DLIST_REMOVE(&stub->_rlist);
         DLIST_REMOVE(&stub->_wlist);
