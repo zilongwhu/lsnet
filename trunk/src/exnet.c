@@ -50,9 +50,8 @@ enum
 	SOCK_WRITEABLE = 0x02,
 	SOCK_CLOSED = 0x04,
 	SOCK_DETACHED = 0x08,
-	SOCK_NOTIFIED = 0x10,
-	SOCK_ERROR = 0x20,
-	SOCK_IDLE = 0x40,
+	SOCK_ERROR = 0x10,
+	SOCK_IDLE = 0x20,
 };
 
 struct _netstub;
@@ -1159,10 +1158,6 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
 	{
 		next = DLIST_NEXT(cur);
 		stub = GET_OWNER(cur, netstub_t, _elist);
-        if (!DLIST_EMPTY(&stub->_rd_q) && !DLIST_EMPTY(&stub->_wr_q))
-        {
-			stub->_status |= SOCK_NOTIFIED; /* error notification flag */
-        }
 		/* move all pending request to done list */
 		__dlist_t *cc;
 		__dlist_t *nn;
@@ -1201,10 +1196,6 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
 				netstub_clean(h, stub);
 				stub->_status = SOCK_IDLE;
 				stub->_errno = ETIMEDOUT;
-                if (!DLIST_EMPTY(&stub->_rd_q) && !DLIST_EMPTY(&stub->_wr_q))
-                {
-                    stub->_status |= SOCK_NOTIFIED; /* error notification flag */
-                }
 				/* move all pending request to done list */
 				for ( cc = DLIST_NEXT(&stub->_rd_q); cc != &stub->_rd_q; cc = nn )
 				{
@@ -1262,12 +1253,7 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
 					|| (stub->_status & SOCK_IDLE) /* idle */
 					)
 			{
-				if ( stub->_status & SOCK_NOTIFIED )
-				{
-					flag = 1;
-					DEBUG("already notified stub.");
-				}
-				else if ( cnt < size )
+				if ( cnt < size )
 				{
 					flag = 1;
 					DEBUG("notify upper caller now.");
