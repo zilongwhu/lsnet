@@ -27,11 +27,11 @@
 
 static const char *const s_level_name[] =
 {
-	"DEBUG ",
-	"TRACE ",
-	"NOTICE ",
-	"WARNING ",
-	"FATAL ",
+	"[DEBUG] ",
+	"[TRACE] ",
+	"[NOTICE] ",
+	"[WARNING] ",
+	"[FATAL] ",
 };
 
 static pthread_key_t g_log_key;
@@ -70,6 +70,7 @@ void err_warn(int level, const char *format, ...)
 			fprintf(stderr, "failed to alloc mem.");
 			return ;
 		}
+        st->_last_tm = 0;
 		int ret = pthread_setspecific(g_log_key, st);
 		if ( 0 != ret )
 		{
@@ -82,10 +83,16 @@ void err_warn(int level, const char *format, ...)
 	if ( now > st->_last_tm )
 	{
 		st->_last_tm = now;
-		struct tm *p = localtime(&now);
-
-		strftime(st->_buffer, sizeof(st->_buffer), "[%Y-%m-%d %H:%M:%S] ", p);
-		st->_buffer[23] = '\0';
+        struct tm result;
+		if (localtime_r(&now, &result))
+        {
+            strftime(st->_buffer, sizeof(st->_buffer), "[%Y-%m-%d %H:%M:%S] ", &result);
+        }
+        else
+        {
+            strcpy(st->_buffer, "[0000-00-00 00:00:00] ");
+        }
+        st->_buffer[23] = '\0';
 	}
 	va_list vl;
 
