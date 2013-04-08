@@ -18,8 +18,8 @@
 
 #include "exnet.h"
 
-int main(int argc, char *argv[])
-{
-	epex_t *ep = epex_open(1024);
-	return 0;
-}
+//int main(int argc, char *argv[])
+//{
+//	epex_t *ep = epex_open(1024);
+//	return 0;
+//}
