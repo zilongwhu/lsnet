@@ -21,11 +21,11 @@
 
 enum
 {
-    LOG_LEVAL_DEBUG,
-    LOG_LEVAL_TRACE,
-    LOG_LEVAL_NOTICE,
-    LOG_LEVAL_WARNING,
-    LOG_LEVAL_FATAL,
+    LOG_LEVEL_DEBUG,
+    LOG_LEVEL_TRACE,
+    LOG_LEVEL_NOTICE,
+    LOG_LEVEL_WARNING,
+    LOG_LEVEL_FATAL,
 };
 
 void err_warn(int level, const char *format, ...);
@@ -35,11 +35,41 @@ void err_warn(int level, const char *format, ...);
             __FILE__, __FUNCTION__, __LINE__, ##args);                    \
 } while(0)
 
-//#define DEBUG(format, args...)
-#define DEBUG(format, args...)        LOG_HELPER(LOG_LEVAL_DEBUG, format, ##args)
-#define TRACE(format, args...)        LOG_HELPER(LOG_LEVAL_TRACE, format, ##args)
-#define NOTICE(format, args...)        LOG_HELPER(LOG_LEVAL_NOTICE, format, ##args)
-#define WARNING(format, args...)    LOG_HELPER(LOG_LEVAL_WARNING, format, ##args)
-#define FATAL(format, args...)        LOG_HELPER(LOG_LEVAL_FATAL, format, ##args)
+#ifdef LOG_LEVEL
+
+#if LOG_LEVEL<=0
+#define DEBUG(format, args...)        LOG_HELPER(LOG_LEVEL_DEBUG, format, ##args)
+#else
+#define DEBUG(format, args...)
+#endif
+
+#if LOG_LEVEL<=1
+#define TRACE(format, args...)        LOG_HELPER(LOG_LEVEL_TRACE, format, ##args)
+#else
+#define TRACE(format, args...)
+#endif
+
+#if LOG_LEVEL<=2
+#define NOTICE(format, args...)        LOG_HELPER(LOG_LEVEL_NOTICE, format, ##args)
+#else
+#define NOTICE(format, args...)
+#endif
+
+#if LOG_LEVEL<=3
+#define WARNING(format, args...)    LOG_HELPER(LOG_LEVEL_WARNING, format, ##args)
+#else
+#define WARNING(format, args...)
+#endif
+
+#else
+
+#define DEBUG(format, args...)        LOG_HELPER(LOG_LEVEL_DEBUG, format, ##args)
+#define TRACE(format, args...)        LOG_HELPER(LOG_LEVEL_TRACE, format, ##args)
+#define NOTICE(format, args...)        LOG_HELPER(LOG_LEVEL_NOTICE, format, ##args)
+#define WARNING(format, args...)    LOG_HELPER(LOG_LEVEL_WARNING, format, ##args)
+
+#endif
+
+#define FATAL(format, args...)        LOG_HELPER(LOG_LEVEL_FATAL, format, ##args)
 
 #endif
