@@ -40,6 +40,8 @@ struct log_sp
 {
     char _buffer[4096];
     time_t _last_tm;
+    pthread_t _tid;
+    int _prefix_len;
 };
 
 static void create_log_key()
@@ -71,6 +73,8 @@ void err_warn(int level, const char *format, ...)
             return ;
         }
         st->_last_tm = 0;
+        st->_tid = pthread_self();
+        st->_prefix_len = 0;
         int ret = pthread_setspecific(g_log_key, st);
         if ( 0 != ret )
         {
@@ -90,13 +94,15 @@ void err_warn(int level, const char *format, ...)
         }
         else
         {
-            strcpy(st->_buffer, "[0000-00-00 00:00:00] ");
+            strcpy(st->_buffer, "[0000-00-00 00:00:00] "); /* strlen=22 */
         }
-        st->_buffer[23] = '\0';
+        st->_buffer[22] = '\0';
+        snprintf(st->_buffer + 22, sizeof(st->_buffer) - 22, "[%ld]", (long)st->_tid);
+        st->_prefix_len = strlen(st->_buffer);
     }
     va_list vl;
 
-    strcpy(st->_buffer + 22, s_level_name[level]);
+    strcpy(st->_buffer + st->_prefix_len, s_level_name[level]);
     int len = strlen(st->_buffer);
 
     va_start(vl, format);
