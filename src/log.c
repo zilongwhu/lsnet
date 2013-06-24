@@ -97,7 +97,7 @@ void err_warn(int level, const char *format, ...)
             strcpy(st->_buffer, "[0000-00-00 00:00:00] "); /* strlen=22 */
         }
         st->_buffer[22] = '\0';
-        snprintf(st->_buffer + 22, sizeof(st->_buffer) - 22, "[%ld]", (long)st->_tid);
+        snprintf(st->_buffer + 22, sizeof(st->_buffer) - 22, "[%lu]", (unsigned long)st->_tid);
         st->_prefix_len = strlen(st->_buffer);
     }
     va_list vl;
