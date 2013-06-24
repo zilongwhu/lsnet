@@ -186,7 +186,7 @@ static void timer_adjust_min(mstimer_t *tm)
         int pos;
         for (pos = 0; pos < 60; ++pos)
         {
-            if (DLIST_EMPTY(&tm->_sec[pos]))
+            if (!DLIST_EMPTY(&tm->_sec[pos]))
             {
                 WARNING("tm->_sec[%d] should be empty, error", pos);
                 return ;
@@ -245,7 +245,7 @@ static void timer_adjust_sec(mstimer_t *tm)
         int pos;
         for (pos = 0; pos < 1000; ++pos)
         {
-            if (DLIST_EMPTY(&tm->_ms[pos]))
+            if (!DLIST_EMPTY(&tm->_ms[pos]))
             {
                 WARNING("tm->_ms[%d] should be empty, error", pos);
                 return ;
