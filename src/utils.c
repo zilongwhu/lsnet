@@ -18,6 +18,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
+#include "log.h"
 #include "utils.h"
 
 int set_nonblock(int fd)

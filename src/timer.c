@@ -17,6 +17,7 @@
  */
 #include <stdlib.h>
 #include <time.h>
+#include "log.h"
 #include "timer.h"
 #include "utils.h"
 
@@ -25,6 +26,7 @@ mstimer_t *timer_new(void)
     mstimer_t *res =  (mstimer_t *)calloc(1, sizeof(mstimer_t));
     if ( NULL == res )
     {
+        WARNING("no mem left, calloc ret NULL");
         return NULL;
     }
     struct timeval tv;
@@ -97,6 +99,7 @@ int timer_add(mstimer_t *tm, struct __timer_unit *unit)
     const uint64_t ms = TV2MS(unit->_tv);
     if ( ms < tm->_last )
     {
+        WARNING("unit timeout time[%lu] < timer base time[%lu]", ms, tm->_last);
         return -1;
     }
     ++tm->_count;
@@ -106,22 +109,22 @@ int timer_add(mstimer_t *tm, struct __timer_unit *unit)
 
     const uint64_t sec_base = tm->_last / 1000;
     const uint64_t sec_des = ms / 1000;
-    if ( sec_base == sec_des )              /* 同一秒钟 */
+    if ( sec_base == sec_des )                  /* 同一秒钟 */
     {
-        off = ms % 1000;                /* [0, 999] */
+        off = ms % 1000;                        /* [0, 999] */
         DLIST_INSERT_B(&unit->_list, &tm->_ms[off]);
         return 0;
     }
     const uint64_t min_base = sec_base / 60;
     const uint64_t min_des = sec_des / 60;
-        if ( min_base == min_des )              /* 同一分钟 */
+    if ( min_base == min_des )                  /* 同一分钟 */
     {
-                off = sec_des % 60;             /* [1, 59] */
+        off = sec_des % 60;                     /* [1, 59] */
         DLIST_INSERT_B(&unit->_list, &tm->_sec[off]);
     }
-        else if ( min_des - min_base < 60 )     /* 一小时内 */
+    else if ( min_des - min_base < 60 )         /* 一小时内 */
     {
-                off = min_des - min_base;       /* [1, 59] */
+        off = min_des - min_base;               /* [1, 59] */
         DLIST_INSERT_B(&unit->_list, &tm->_min[off]);
     }
     else
@@ -175,8 +178,22 @@ static void timer_adjust_min(mstimer_t *tm)
 {
     if ( tm->_last % 60000 != 0 )
     {
+        WARNING("tm->_last[%lu] %% 60000 != 0, need not to adjust on minutes", tm->_last);
         return ;
     }
+#ifdef TIMER_CHECK
+    {
+        int pos;
+        for (pos = 0; pos < 60; ++pos)
+        {
+            if (DLIST_EMPTY(&tm->_sec[pos]))
+            {
+                WARNING("tm->_sec[%d] should be empty, error", pos);
+                return ;
+            }
+        }
+    }
+#endif
 
     __dlist_t *ptr;
     int pos;
@@ -204,6 +221,12 @@ static void timer_adjust_min(mstimer_t *tm)
         unit = GET_OWNER(ptr, struct __timer_unit, _list);
         if ( tm->_last / 60000 + 59 >= TV2MS(unit->_tv) / 60000 )
         {
+#ifdef TIMER_CHECK
+            if ( tm->_last / 60000 + 59 != TV2MS(unit->_tv) / 60000 )
+            {
+                WARNING("timer panic error");
+            }
+#endif
             DLIST_REMOVE(ptr);
             DLIST_INSERT_B(ptr, &tm->_min[59]);
         }
@@ -214,8 +237,22 @@ static void timer_adjust_sec(mstimer_t *tm)
 {
     if ( tm->_last % 1000 != 0 )
     {
+        WARNING("tm->_last[%lu] %% 1000 != 0, need not to adjust on seconds", tm->_last);
         return ;
     }
+#ifdef TIMER_CHECK
+    {
+        int pos;
+        for (pos = 0; pos < 1000; ++pos)
+        {
+            if (DLIST_EMPTY(&tm->_ms[pos]))
+            {
+                WARNING("tm->_ms[%d] should be empty, error", pos);
+                return ;
+            }
+        }
+    }
+#endif
     /* 步入下一秒 */
     int off = (tm->_last / 1000) % 60;
     if ( 0 == off )
