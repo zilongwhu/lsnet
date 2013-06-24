@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include "log.h"
 #include "dlist.h"
 #include "slist.h"
 #include "utils.h"
@@ -31,7 +32,15 @@ static pthread_once_t __mp_g_init_page_size_once = PTHREAD_ONCE_INIT;
 
 static void __mp_init_page_size(void)
 {
-    __mp_g_page_size = 10 * sysconf(_SC_PAGESIZE);
+    long v = sysconf(_SC_PAGESIZE);
+    if (v > 0)
+    {
+        __mp_g_page_size = 10 * v;
+    }
+    else
+    {
+        __mp_g_page_size = 10 * 4096;
+    }
 }
 
 typedef struct __page_head
@@ -56,15 +65,17 @@ struct __mempool_in
 
 mempool_t mp_init(size_t elem_size)
 {
-    pthread_once(&__mp_g_init_page_size_once, __mp_init_page_size);
     if ( 0 == elem_size )
     {
         return NULL;
     }
+    pthread_once(&__mp_g_init_page_size_once, __mp_init_page_size);
+
     struct __mempool_in *res;
     res = (struct __mempool_in *)calloc(1, sizeof(struct __mempool_in));
     if ( NULL == res )
     {
+        WARNING("no mem left, calloc ret NULL");
         return NULL;
     }
     res->_elem_size = elem_size + sizeof(void *); /* extra _page pointer */
@@ -109,6 +120,7 @@ void *mp_alloc(mempool_t mp)
     void *page = malloc(size);
     if ( NULL == page )
     {
+        WARNING("no mem left, malloc ret NULL");
         return NULL;
     }
 

@@ -18,12 +18,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include "log.h"
 #include "hash.h"
 
 __ex_hash_t *ex_hash_init(__ex_hash_arg_t *args)
 {
     if ( NULL == args )
     {
+        WARNING("args is NULL");
         return NULL;
     }
     if ( 0 == args->_key_size
@@ -32,22 +34,26 @@ __ex_hash_t *ex_hash_init(__ex_hash_arg_t *args)
             || NULL == args->_hash_fun
             || NULL == args->_hash_cmp )
     {
+        WARNING("invalid args");
         return NULL;
     }
     __ex_hash_t *res = (__ex_hash_t *)calloc(1, sizeof(__ex_hash_t));
     if ( NULL == res )
     {
+        WARNING("no mem left, calloc ret NULL");
         return NULL;
     }
     memcpy(&res->_attrs, args, sizeof(*args));
     res->_buckets = (__slist_t *)calloc(res->_attrs._bucket_num, sizeof(__slist_t));
     if ( NULL == res->_buckets )
     {
+        WARNING("no mem left, calloc ret NULL");
         goto ERR;
     }
     res->_mp = mp_init(sizeof(__slist_t) + res->_attrs._key_size + res->_attrs._value_size);
     if ( NULL == res->_mp )
     {
+        WARNING("failed to init mempool, mp_init ret NULL");
         goto ERR;
     }
     return res;
@@ -110,6 +116,7 @@ int ex_hash_add(__ex_hash_t *ptr, const void *key, const void *value, int ow)
     __slist_t *pnode = (__slist_t *)mp_alloc(ptr->_mp);
     if ( NULL == pnode )
     {
+        WARNING("no mem left, mp_alloc ret NULL");
         return EX_HASH_ADD_FAIL;
     }
     SLIST_INIT(pnode);
