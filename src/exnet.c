@@ -61,7 +61,7 @@ typedef struct _nettask
 {
     struct _netstub *_stub;
 
-    __dlist_t _list;                        /* list, read or write or done */
+    __dlist_t _list;                            /* list, read or write or done */
 
     struct timeval _req_time;
     struct timeval _done_time;
@@ -87,23 +87,23 @@ typedef struct _netstub
     int _timeout;
     struct __timer_unit _tm_unit;
 
-    __dlist_t _list;                        /* list */
-        __dlist_t _dlist;                       /* done list */
+    __dlist_t _list;                            /* list */
+    __dlist_t _dlist;                           /* done list */
 
-    __dlist_t _rlist;                       /* readable list */
-    __dlist_t _wlist;                       /* writeable list */
-    __dlist_t _elist;                       /* error list */
+    __dlist_t _rlist;                           /* readable list */
+    __dlist_t _wlist;                           /* writeable list */
+    __dlist_t _elist;                           /* error list */
 
-    int _sock_fd;                           /* socket */
-        int _is_listen;                         /* listen flag */
-    uint32_t _status;                       /* status */
-    int _errno;                             /* errno */
+    int _sock_fd;                               /* socket */
+    int _is_listen;                             /* listen flag */
+    uint32_t _status;                           /* status */
+    int _errno;                                 /* errno */
 
     void *_user_ptr;
 
-    __dlist_t _rd_q;                        /* read request queue */
-    __dlist_t _wr_q;                        /* write request queue */
-        __dlist_t _done_q;                      /* done queue */
+    __dlist_t _rd_q;                            /* read request queue */
+    __dlist_t _wr_q;                            /* write request queue */
+    __dlist_t _done_q;                          /* done queue */
 } netstub_t;
 
 struct _epex_in
@@ -119,12 +119,12 @@ struct _epex_in
 
     __ex_hash_t *_sock2stub;
 
-    __dlist_t _stubs;                       /* associated sockets */
-        __dlist_t _avail_stubs;                 /* list of stubs which have completed requests */
+    __dlist_t _stubs;                           /* associated sockets */
+    __dlist_t _avail_stubs;                     /* list of stubs which have completed requests */
 
-    __dlist_t _rlist;                       /* readable stub list */
-    __dlist_t _wlist;                       /* writeable stub list */
-    __dlist_t _elist;                       /* error stub list */
+    __dlist_t _rlist;                           /* readable stub list */
+    __dlist_t _wlist;                           /* writeable stub list */
+    __dlist_t _elist;                           /* error stub list */
 
     mempool_t _stub_pool;
     mempool_t _task_pool;
@@ -154,14 +154,18 @@ static const char *const g_status_names[] =
     "ERROR",
 };
 
-#ifdef DEBUG
+#ifdef DEBUG_EPEX
+
 #define RESULT_DUMP(p)    result_dump(p)
 #define NETTASK_DUMP(p)    nettask_dump(p)
 #define NETSTUB_DUMP(p)    netstub_dump(p)
+
 #else
+
 #define RESULT_DUMP(p)
 #define NETTASK_DUMP(p)
 #define NETSTUB_DUMP(p)
+
 #endif
 
 static void result_dump(netresult_t *result)
@@ -187,8 +191,8 @@ static void nettask_dump(nettask_t *task)
     DLIST_COUNT(&task->_list, num);
     NOTICE("   stub[%p]", task->_stub);
     NOTICE("   list num[%d]", num);
-    NOTICE("   request time[%d:%d]", (int)task->_req_time.tv_sec, (int)task->_req_time.tv_usec);
-    NOTICE("   done time[%d:%d]", (int)task->_done_time.tv_sec, (int)task->_done_time.tv_usec);
+    NOTICE("   request time[%ld:%d]", (long)task->_req_time.tv_sec, (int)task->_req_time.tv_usec);
+    NOTICE("   done time[%ld:%d]", (long)task->_done_time.tv_sec, (int)task->_done_time.tv_usec);
     NOTICE("   timeout[%d ms]", task->_timeout);
     NOTICE("   op type[%s]", g_op_names[task->_op_type]);
     NOTICE("   read all[%s]", task->_read_all ? "true" : "false");
@@ -232,80 +236,80 @@ static void netstub_dump(netstub_t *stub)
     NOTICE("end dump stub: @%p", stub);
 }
 
-#define MAKE_STUB_AVAIL(sock_stub) do {                               \
-    if ( DLIST_EMPTY(&(sock_stub)->_dlist) )                          \
-    {                                                                 \
-        DLIST_INSERT_B(&(sock_stub)->_dlist,                          \
-                &(sock_stub)->_epex->_avail_stubs);                   \
-    }                                                                 \
+#define MAKE_STUB_AVAIL(sock_stub) do {                                   \
+    if ( DLIST_EMPTY(&(sock_stub)->_dlist) )                              \
+    {                                                                     \
+        DLIST_INSERT_B(&(sock_stub)->_dlist,                              \
+                &(sock_stub)->_epex->_avail_stubs);                       \
+    }                                                                     \
 } while (0)
 
-#define ACTIVE_STUB(sock_stub) do {                                   \
-    if ( (sock_stub)->_timeout > 0 )                                  \
-    {                                                                 \
-        timer_del((sock_stub)->_epex->_timer,                         \
-                &(sock_stub)->_tm_unit);                              \
-        timer_add2((sock_stub)->_epex->_timer,                        \
-                &(sock_stub)->_tm_unit, (sock_stub)->_timeout);       \
-    }                                                                 \
+#define ACTIVE_STUB(sock_stub) do {                                       \
+    if ( (sock_stub)->_timeout > 0 )                                      \
+    {                                                                     \
+        timer_del((sock_stub)->_epex->_timer,                             \
+                &(sock_stub)->_tm_unit);                                  \
+        timer_add2((sock_stub)->_epex->_timer,                            \
+                &(sock_stub)->_tm_unit, (sock_stub)->_timeout);           \
+    }                                                                     \
 } while(0)
 
-#define DO_WITH_ERROR(ep_hdl, sock_stub, err) do {                    \
-    DEBUG("begin: do with error.");                                   \
-    NETSTUB_DUMP(sock_stub);                                          \
-    netstub_clean(ep_hdl, sock_stub);                                 \
-    (sock_stub)->_status = SOCK_ERROR;                                \
-    (sock_stub)->_errno = (err);                                      \
-    DLIST_INSERT_B(&(sock_stub)->_elist, &(ep_hdl)->_elist);          \
-    NETSTUB_DUMP(sock_stub);                                          \
-    DEBUG("end: do with error.");                                     \
+#define DO_WITH_ERROR(ep_hdl, sock_stub, err) do {                        \
+    DEBUG("begin: do with error.");                                       \
+    NETSTUB_DUMP(sock_stub);                                              \
+    netstub_clean(ep_hdl, sock_stub);                                     \
+    (sock_stub)->_status = SOCK_ERROR;                                    \
+    (sock_stub)->_errno = (err);                                          \
+    DLIST_INSERT_B(&(sock_stub)->_elist, &(ep_hdl)->_elist);              \
+    NETSTUB_DUMP(sock_stub);                                              \
+    DEBUG("end: do with error.");                                         \
 } while(0)
 
-#define DO_WITH_TASK_DONE(ep_hdl, sock_stub, task_ptr, status) do {   \
-    DEBUG("begin: do with task done.");                               \
-    NETSTUB_DUMP(sock_stub);                                          \
-    NETTASK_DUMP(task_ptr);                                           \
-    if ( (task_ptr)->_timeout > 0 )                                   \
-    {                                                                 \
-        timer_del((ep_hdl)->_timer, &(task_ptr)->_tm_unit);       \
-    }                                                                 \
-    DLIST_REMOVE(&(task_ptr)->_list);                                 \
-    DLIST_INSERT_B(&(task_ptr)->_list, &(sock_stub)->_done_q);        \
-    MAKE_STUB_AVAIL(sock_stub);                                       \
-    gettimeofday(&(task_ptr)->_done_time, NULL);                      \
-    (task_ptr)->_status = (status);                                   \
-    (task_ptr)->_errno = (sock_stub)->_errno;                         \
-    NETTASK_DUMP(task_ptr);                                           \
-    NETSTUB_DUMP(sock_stub);                                          \
-    DEBUG("end: do with task done.");                                 \
+#define DO_WITH_TASK_DONE(ep_hdl, sock_stub, task_ptr, status) do {       \
+    DEBUG("begin: do with task done.");                                   \
+    NETSTUB_DUMP(sock_stub);                                              \
+    NETTASK_DUMP(task_ptr);                                               \
+    if ( (task_ptr)->_timeout > 0 )                                       \
+    {                                                                     \
+        timer_del((ep_hdl)->_timer, &(task_ptr)->_tm_unit);               \
+    }                                                                     \
+    DLIST_REMOVE(&(task_ptr)->_list);                                     \
+    DLIST_INSERT_B(&(task_ptr)->_list, &(sock_stub)->_done_q);            \
+    MAKE_STUB_AVAIL(sock_stub);                                           \
+    gettimeofday(&(task_ptr)->_done_time, NULL);                          \
+    (task_ptr)->_status = (status);                                       \
+    (task_ptr)->_errno = (sock_stub)->_errno;                             \
+    NETTASK_DUMP(task_ptr);                                               \
+    NETSTUB_DUMP(sock_stub);                                              \
+    DEBUG("end: do with task done.");                                     \
 } while(0)
 
 #define DO_WITH_TASK_TIMEOUT(ep_hdl, sock_stub, task_ptr) do {            \
-    DEBUG("begin: do with task timeout.");                            \
-    NETSTUB_DUMP(sock_stub);                                          \
-    NETTASK_DUMP(task_ptr);                                           \
-    DLIST_REMOVE(&(task_ptr)->_list);                                 \
-    DLIST_INSERT_B(&(task_ptr)->_list, &(sock_stub)->_done_q);        \
-    MAKE_STUB_AVAIL(sock_stub);                                       \
-    gettimeofday(&(task_ptr)->_done_time, NULL);                      \
-    (task_ptr)->_status = NET_ETIMEOUT;                               \
-    (task_ptr)->_errno = ETIMEDOUT;                                   \
-    NETTASK_DUMP(task_ptr);                                           \
-    NETSTUB_DUMP(sock_stub);                                          \
-    DEBUG("end: do with task timeout.");                              \
+    DEBUG("begin: do with task timeout.");                                \
+    NETSTUB_DUMP(sock_stub);                                              \
+    NETTASK_DUMP(task_ptr);                                               \
+    DLIST_REMOVE(&(task_ptr)->_list);                                     \
+    DLIST_INSERT_B(&(task_ptr)->_list, &(sock_stub)->_done_q);            \
+    MAKE_STUB_AVAIL(sock_stub);                                           \
+    gettimeofday(&(task_ptr)->_done_time, NULL);                          \
+    (task_ptr)->_status = NET_ETIMEOUT;                                   \
+    (task_ptr)->_errno = ETIMEDOUT;                                       \
+    NETTASK_DUMP(task_ptr);                                               \
+    NETSTUB_DUMP(sock_stub);                                              \
+    DEBUG("end: do with task timeout.");                                  \
 } while(0)
 
 #define TASK2RESULT(task, result) do {                                    \
-    (result)->_sock_fd = (task)->_stub->_sock_fd;                     \
-    (result)->_op_type = (task)->_op_type;                            \
-    (result)->_status = (task)->_status;                              \
-    (result)->_errno = (task)->_errno;                                \
-    (result)->_buffer = (task)->_buffer;                              \
-    (result)->_curpos = (task)->_curpos;                              \
-    (result)->_size = (task)->_size;                                  \
-    (result)->_user_ptr = (task)->_user_ptr;                          \
-    (result)->_user_ptr2 = (task)->_stub->_user_ptr;                  \
-    RESULT_DUMP(result);                                              \
+    (result)->_sock_fd = (task)->_stub->_sock_fd;                         \
+    (result)->_op_type = (task)->_op_type;                                \
+    (result)->_status = (task)->_status;                                  \
+    (result)->_errno = (task)->_errno;                                    \
+    (result)->_buffer = (task)->_buffer;                                  \
+    (result)->_curpos = (task)->_curpos;                                  \
+    (result)->_size = (task)->_size;                                      \
+    (result)->_user_ptr = (task)->_user_ptr;                              \
+    (result)->_user_ptr2 = (task)->_stub->_user_ptr;                      \
+    RESULT_DUMP(result);                                                  \
 } while(0)
 
 static uint32_t epex_hash(const void *key)
@@ -328,12 +332,12 @@ static nettask_t *nettask_alloc(struct _epex_in *h)
     }
     bzero(task, sizeof(*task));
     DLIST_INIT(&task->_list);
+    DLIST_INIT(&task->_tm_unit._list);
     return task;
 }
 
 static void nettask_free(struct _epex_in *h, nettask_t *task)
 {
-    DLIST_REMOVE(&task->_list);
     mp_free(h->_task_pool, task);
 }
 
@@ -348,6 +352,7 @@ static netstub_t *netstub_alloc(struct _epex_in *h)
     res->_epex = h;
     res->_timeout = -1;
     bzero(&res->_tm_unit, sizeof res->_tm_unit);
+    DLIST_INIT(&res->_tm_unit._list);
     DLIST_INIT(&res->_list);
     DLIST_INIT(&res->_dlist);
     DLIST_INIT(&res->_rlist);
@@ -367,6 +372,8 @@ static netstub_t *netstub_alloc(struct _epex_in *h)
 static void netstub_free(struct _epex_in *h, netstub_t *stub)
 {
     int num;
+
+    DLIST_REMOVE(&stub->_tm_unit._list);
 
     DLIST_REMOVE(&stub->_list);
     DLIST_REMOVE(&stub->_dlist);
@@ -390,6 +397,9 @@ static void netstub_free(struct _epex_in *h, netstub_t *stub)
     {
         WARNING("stub[%p] is going to be freed, but done queue has [%d] elems.", stub, num);
     }
+    DLIST_REMOVE(&stub->_rd_q);
+    DLIST_REMOVE(&stub->_wr_q);
+    DLIST_REMOVE(&stub->_done_q);
 
     mp_free(h->_stub_pool, stub);
 }
@@ -404,9 +414,9 @@ static void netstub_clean(struct _epex_in *h, netstub_t *stub)
     {
         WARNING("failed to remove stub from epoll[%d], sock[%d], error[%s].", h->_ep_fd, stub->_sock_fd, strerror_t(errno));
     }
-        DLIST_REMOVE(&stub->_rlist);
-        DLIST_REMOVE(&stub->_wlist);
-        DLIST_REMOVE(&stub->_elist);
+    DLIST_REMOVE(&stub->_rlist);
+    DLIST_REMOVE(&stub->_wlist);
+    DLIST_REMOVE(&stub->_elist);
 }
 
 static netstub_t *get_netstub_by_fd(struct _epex_in *h, int sock, int ignore_err)
@@ -609,7 +619,7 @@ static bool epex_attach_impl(epex_t ptr, int sock_fd, void *user_arg, int ms, in
     stub->_is_listen = is_listen;
     if ( stub->_is_listen )
     {
-                ev.events = EPOLLIN;            /* listen fd use level triggered */
+        ev.events = EPOLLIN;                    /* listen fd use level triggered */
     }
     else
     {
@@ -730,7 +740,7 @@ bool epex_op(int op, epex_t ptr, int sock_fd, void *buf, size_t size, void *user
         WARNING("failed to alloc task, op[%d] sock[%d].", op, sock_fd);
         return false;
     }
-        gettimeofday(&task->_req_time, NULL);   /* now */
+    gettimeofday(&task->_req_time, NULL);       /* now */
     if ( ms > 0 )
     {
         task->_tm_unit._tv = task->_req_time;
@@ -1289,7 +1299,7 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
                 ex_hash_del(h->_sock2stub, &key, NULL); /* remove from hash table */
                 NETSTUB_DUMP(stub);
                 DEBUG("make dying stub[%p] sock[%d] dead.", stub, stub->_sock_fd);
-                netstub_free(h, stub); /* rd_q, wr_q and done_q must be empty */
+                netstub_free(h, stub); /* rd_q, wr_q and done_q must be empty here */
             }
         }
     }
