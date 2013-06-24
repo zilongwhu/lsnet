@@ -30,21 +30,21 @@
 
 struct __timer_unit
 {
-	__dlist_t _list;
-	struct timeval _tv;
-	uintptr_t _user_value;
+    __dlist_t _list;
+    struct timeval _tv;
+    uintptr_t _user_value;
 };
 
 typedef struct __timer_in
 {
-	uint64_t _last;
-	uint64_t _now;
-	uint32_t _count;
+    uint64_t _last;
+    uint64_t _now;
+    uint32_t _count;
 
-	__dlist_t _ms[1000];
-	__dlist_t _sec[60];
-	__dlist_t _min[60];
-	__dlist_t _other;
+    __dlist_t _ms[1000];
+    __dlist_t _sec[60];
+    __dlist_t _min[60];
+    __dlist_t _other;
 } mstimer_t;
 
 mstimer_t *timer_new(void);

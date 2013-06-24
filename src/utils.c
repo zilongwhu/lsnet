@@ -22,19 +22,19 @@
 
 int set_nonblock(int fd)
 {
-	if ( fd < 0 )
-	{
-		return -1;
-	}
-	int flags = fcntl(fd, F_GETFL);
-	if ( flags < 0 )
-	{
-		return -1;
-	}
-	flags |= O_NONBLOCK;
-	if ( fcntl(fd, F_SETFL, flags) < 0 )
-	{
-		return -1;
-	}
-	return 0;
+    if ( fd < 0 )
+    {
+        return -1;
+    }
+    int flags = fcntl(fd, F_GETFL);
+    if ( flags < 0 )
+    {
+        return -1;
+    }
+    flags |= O_NONBLOCK;
+    if ( fcntl(fd, F_SETFL, flags) < 0 )
+    {
+        return -1;
+    }
+    return 0;
 }
