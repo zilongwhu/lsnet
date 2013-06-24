@@ -29,24 +29,24 @@ typedef int __ex_hash_cmp_t(const void *key1, const void *key2);
 
 typedef struct __ex_hash_arg
 {
-	size_t _bucket_num;
-	size_t _key_size;
-	size_t _value_size;
+    size_t _bucket_num;
+    size_t _key_size;
+    size_t _value_size;
 
-	__ex_hash_fun_t *_hash_fun;
-	__ex_hash_cmp_t *_hash_cmp;
+    __ex_hash_fun_t *_hash_fun;
+    __ex_hash_cmp_t *_hash_cmp;
 } __ex_hash_arg_t;
 
 
 typedef struct __ex_hash
 {
-	__ex_hash_arg_t _attrs;
+    __ex_hash_arg_t _attrs;
 
-	size_t _node_cnt;
+    size_t _node_cnt;
 
-	__slist_t *_buckets;
+    __slist_t *_buckets;
 
-	mempool_t _mp;
+    mempool_t _mp;
 } __ex_hash_t;
 
 #define ex_hash_nodenum(ptr) ((ptr) ? (ptr)->node_cnt : 0)

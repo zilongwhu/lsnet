@@ -25,44 +25,44 @@
 #ifndef __CPLUSPLUS
 typedef enum
 {
-	false,
-	true,
+    false,
+    true,
 } bool;
 #endif
 
 enum
 {
-	NET_OP_NOTIFY = 1,
-	NET_OP_READ,
-	NET_OP_WRITE,
-	NET_OP_ACCEPT,
-	NET_OP_CONNECT,
+    NET_OP_NOTIFY = 1,
+    NET_OP_READ,
+    NET_OP_WRITE,
+    NET_OP_ACCEPT,
+    NET_OP_CONNECT,
 };
 
 enum
 {
-	NET_DONE = 1,
-	NET_PART_DONE,
-	NET_EDETACHED,
-	NET_ETIMEOUT,
-	NET_EIDLE,
-	NET_ECLOSED,
-	NET_ERROR,
+    NET_DONE = 1,
+    NET_PART_DONE,
+    NET_EDETACHED,
+    NET_ETIMEOUT,
+    NET_EIDLE,
+    NET_ECLOSED,
+    NET_ERROR,
 };
 
 typedef struct _netresult
 {
-	int _sock_fd;
-	uint16_t _op_type;
-	uint16_t _status;
-	int _errno;
+    int _sock_fd;
+    uint16_t _op_type;
+    uint16_t _status;
+    int _errno;
 
-	void *_buffer;
-	size_t _curpos;
-	size_t _size;
+    void *_buffer;
+    size_t _curpos;
+    size_t _size;
 
-	void *_user_ptr;
-	void *_user_ptr2;
+    void *_user_ptr;
+    void *_user_ptr2;
 } netresult_t;
 
 typedef void *epex_t;

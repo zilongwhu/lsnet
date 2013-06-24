@@ -18,7 +18,7 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-#define SAFE_CLOSE(fd)	do { } while ( fd >= 0 && close(fd) < 0 && EINTR == errno )
+#define SAFE_CLOSE(fd)    do { } while ( fd >= 0 && close(fd) < 0 && EINTR == errno )
 
 #define GET_OWNER(ptr, type, mem) ((type *)(((char *)(ptr)) - (int)&((type *)(0))->mem))
 
