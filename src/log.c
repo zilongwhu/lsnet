@@ -113,7 +113,7 @@ void err_warn(int level, const char *format, ...)
     {
         ret = 0;
     }
-    if ( ret >= sizeof(st->_buffer) - len )
+    if ( ret >= (int)sizeof(st->_buffer) - len )
     {
         ret = sizeof(st->_buffer) - len - 1;
     }

@@ -35,7 +35,7 @@ static void create_error_key()
     }
 }
 
-char *strerror_t(int errnum)
+const char *strerror_t(int errnum)
 {
     static pthread_once_t s_error_once = PTHREAD_ONCE_INIT;
 
