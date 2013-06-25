@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <netinet/in.h>
+#include "nethead.h"
 
 #ifndef __CPLUSPLUS
 typedef enum
