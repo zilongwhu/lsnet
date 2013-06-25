@@ -1256,8 +1256,27 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
             flag = 0;
             if ( stub->_status & SOCK_DETACHED )
             {
-                flag = 1;
-                DEBUG("detached stub, need not to notify."); /* does not need to notify */
+                if ( cnt < size )
+                {
+                    flag = 1;
+                    DEBUG("detached stub, need to notify.");
+                    results[cnt]._sock_fd = stub->_sock_fd;
+                    results[cnt]._op_type = NET_OP_NOTIFY;
+                    results[cnt]._status = NET_EDETACHED;
+                    results[cnt]._errno = 0;
+                    results[cnt]._buffer = NULL;
+                    results[cnt]._curpos = 0;
+                    results[cnt]._size = 0;
+                    results[cnt]._user_ptr = NULL;
+                    results[cnt]._user_ptr2 = stub->_user_ptr;
+                    RESULT_DUMP(results + cnt);
+                    ++cnt;
+                }
+                else
+                {
+                    DEBUG("results[%u] is full, notify detached stub[%p] sock[%d] next time."
+                            , (uint32_t)size, stub, stub->_sock_fd);
+                }
             }
             else if ( (stub->_status & SOCK_ERROR) /* error */
                     || (stub->_status & SOCK_IDLE) /* idle */
