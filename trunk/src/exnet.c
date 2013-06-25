@@ -1044,7 +1044,7 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
                 {
                     do
                     {
-                        ret = read(stub->_sock_fd, task->_buffer + task->_curpos, task->_size - task->_curpos);
+                        ret = read(stub->_sock_fd, (char *)task->_buffer + task->_curpos, task->_size - task->_curpos);
                         flag = 1;
                         work_flag = 1;
                     } while (ret < 0 && EINTR == errno);
@@ -1125,7 +1125,7 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
             {
                 do
                 {
-                    ret = write(stub->_sock_fd, task->_buffer + task->_curpos, task->_size - task->_curpos);
+                    ret = write(stub->_sock_fd, (char *)task->_buffer + task->_curpos, task->_size - task->_curpos);
                     work_flag = 1;
                 } while (ret < 0 && EINTR == errno);
                 if ( ret < 0 )

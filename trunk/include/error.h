@@ -18,6 +18,6 @@
 #ifndef __ERROR_T_H__
 #define __ERROR_T_H__
 
-char *strerror_t(int errnum);
+const char *strerror_t(int errnum);
 
 #endif
