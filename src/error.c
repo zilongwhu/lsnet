@@ -58,7 +58,11 @@ const char *strerror_t(int errnum)
             return "unknown error";
         }
     }
+#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
     if ( strerror_r(errnum, str, 256) < 0 )
+#else
+    if ( (str = strerror_r(errnum, str, 256)) == NULL )
+#endif
     {
         WARNING("strerror_r error[%d].", errno);
         return "unknown error";
