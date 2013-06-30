@@ -19,6 +19,8 @@
 #ifndef __NET_HEADER_H__
 #define __NET_HEADER_H__
 
+#include <stdint.h>
+
 #define MAGIC_NUM   (0x11190309)
 
 typedef struct net_head_s
