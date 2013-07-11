@@ -20,7 +20,7 @@
 
 #define SAFE_CLOSE(fd)    do { } while ( fd >= 0 && close(fd) < 0 && EINTR == errno )
 
-#define GET_OWNER(ptr, type, mem) ((type *)(((char *)(ptr)) - (int)&((type *)(0x10))->mem) - 0x10)
+#define GET_OWNER(ptr, type, mem) ((type *)(((char *)(ptr)) - (int)&((type *)(0xF0))->mem) + 0xF0)
 
 int set_nonblock(int fd);
 
