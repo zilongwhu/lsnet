@@ -95,8 +95,9 @@ typedef struct _netstub
     __dlist_t _elist;                           /* error list */
 
     int _sock_fd;                               /* socket */
-    int _is_listen;                             /* listen flag */
-    uint32_t _status;                           /* status */
+    int8_t _is_listen;                          /* listen flag */
+    int8_t _is_silence;                         /* silence flag, do not notify events */
+    uint16_t _status;                           /* status */
     int _errno;                                 /* errno */
 
     void *_user_ptr;
@@ -213,7 +214,8 @@ static void netstub_dump(netstub_t *stub)
     NOTICE("   epex[%p]", stub->_epex);
     NOTICE("   sock[%d]", stub->_sock_fd);
     NOTICE("   type[%s]", stub->_is_listen ? "listen" : "normal");
-    NOTICE("   status[%u]", stub->_status);
+    NOTICE("   silence[%s]", stub->_is_silence ? "yes" : "no");
+    NOTICE("   status[%hu]", stub->_status);
     NOTICE("   error[%s]", strerror_t(stub->_errno));
     NOTICE("   timeout[%d ms]", stub->_timeout);
     NOTICE("   user ptr[%p]", stub->_user_ptr);
@@ -360,6 +362,7 @@ static netstub_t *netstub_alloc(struct _epex_in *h)
     DLIST_INIT(&res->_elist);
     res->_sock_fd = -1;
     res->_is_listen = 0;
+    res->_is_silence = 0;
     res->_status = SOCK_NONE;
     res->_errno = 0;
     res->_user_ptr = NULL;
@@ -925,6 +928,41 @@ bool epex_write(epex_t ptr, int sock_fd, const void *buf, size_t size, void *use
     return epex_op(NET_OP_WRITE, ptr, sock_fd, (void *)buf, size, user_arg, ms, 1);
 }
 
+static bool set_notify_status_for_netstub(epex_t ptr, int sock_fd, int silence)
+{
+    if ( NULL == ptr || sock_fd < 0 )
+    {
+        WARNING("invalid args: ptr[%p] sock fd[%d].", ptr, sock_fd);
+        return false;
+    }
+    struct _epex_in *h = (struct _epex_in *)ptr;
+    if ( !IS_VALID_EPEX(h) )
+    {
+        WARNING("invalid epex handle[%p].", h);
+        return false;
+    }
+    netstub_t *stub = get_netstub_by_fd(h, sock_fd, 1);
+    if ( NULL == stub )
+    {
+        WARNING("cannot get stub from hash table, sock[%d].", sock_fd);
+        return false;
+    }
+    DEBUG("%s nofify for stub[%p] fd[%d].", silence ? "disable" : "enable", stub, stub->_sock_fd);
+    stub->_is_silence = silence ? 1 : 0;
+    NETSTUB_DUMP(stub);
+    return true;
+}
+
+bool epex_enable_notify(epex_t ptr, int sock_fd)
+{
+    return set_notify_status_for_netstub(ptr, sock_fd, 0);
+}
+
+bool epex_disable_notify(epex_t ptr, int sock_fd)
+{
+    return set_notify_status_for_netstub(ptr, sock_fd, 1);
+}
+
 ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
 {
     if ( NULL == ptr || NULL == results || 0 == size )
@@ -1236,6 +1274,11 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
     {
         next = DLIST_NEXT(cur);
         stub = GET_OWNER(cur, netstub_t, _dlist);
+        if (stub->_is_silence)
+        {
+            DEBUG("sock[%d]'s stub is silence, do not notify caller", stub->_sock_fd);
+            continue;
+        }
         /* go through done queue */
         for ( cc = DLIST_NEXT(&stub->_done_q); cc != &stub->_done_q; cc = nn )
         {
