@@ -436,7 +436,7 @@ static netstub_t *get_netstub_by_fd(struct _epex_in *h, int sock, int ignore_err
         FATAL("hash table may be fucked.");
         return NULL;
     }
-    if ( (SOCK_ERROR & stub->_status) || (SOCK_DETACHED & stub->_status) )
+    if ( (SOCK_ERROR & stub->_status) || (SOCK_IDLE & stub->_status) || (SOCK_DETACHED & stub->_status) )
     {
         if ( !ignore_err )
         {
@@ -588,7 +588,7 @@ static bool epex_attach_impl(epex_t ptr, int sock_fd, void *user_arg, int ms, in
     netstub_t *stub = get_netstub_by_fd(h, sock_fd, 1);
     if ( NULL != stub )
     {
-        if ( (SOCK_ERROR & stub->_status) || (SOCK_DETACHED & stub->_status) )
+        if ( (SOCK_ERROR & stub->_status) || (SOCK_IDLE & stub->_status) || (SOCK_DETACHED & stub->_status) )
         {
             WARNING("dying stub[%p] fd[%d] status[%d].", stub, stub->_sock_fd, (int)stub->_status);
             return false;
@@ -1335,8 +1335,8 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
             {
                 if (!can_gen_notify)
                 {
-                    DEBUG("cannot gen nofity, notify stub[%p] sock[%d] error next time."
-                            , stub, stub->_sock_fd);
+                    DEBUG("cannot gen nofity, notify stub[%p] sock[%d] %s next time."
+                            , stub, stub->_sock_fd, (stub->_status & SOCK_ERROR) ? "error" : "idle");
                 }
                 else if ( cnt < size )
                 {
@@ -1356,8 +1356,8 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
                 }
                 else
                 {
-                    DEBUG("results[%u] is full, notify stub[%p] sock[%d] error next time."
-                            , (uint32_t)size, stub, stub->_sock_fd);
+                    DEBUG("results[%u] is full, notify stub[%p] sock[%d] %s next time."
+                            , (uint32_t)size, stub, stub->_sock_fd, (stub->_status & SOCK_ERROR) ? "error" : "idle");
                 }
             }
             else
