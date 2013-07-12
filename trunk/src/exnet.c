@@ -1267,8 +1267,9 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
         }
     }
     /* fill results */
-    size_t cnt = 0;
     int key;
+    size_t cnt = 0;
+    int can_gen_notify;
     /* do with available sockets */
     for ( cur = DLIST_NEXT(&h->_avail_stubs); cur != &h->_avail_stubs; cur = next )
     {
@@ -1279,6 +1280,7 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
             DEBUG("sock[%d]'s stub is silence, do not notify caller", stub->_sock_fd);
             continue;
         }
+        can_gen_notify = 1;
         /* go through done queue */
         for ( cc = DLIST_NEXT(&stub->_done_q); cc != &stub->_done_q; cc = nn )
         {
@@ -1292,6 +1294,7 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
             TASK2RESULT(task, results + cnt);
             DLIST_REMOVE(cc);
             nettask_free(h, task);
+            can_gen_notify = 0;
             ++cnt;
         }
         if ( DLIST_EMPTY(&stub->_done_q) )
@@ -1299,7 +1302,12 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
             flag = 0;
             if ( stub->_status & SOCK_DETACHED )
             {
-                if ( cnt < size )
+                if (!can_gen_notify)
+                {
+                    DEBUG("cannot gen nofity, notify detached stub[%p] sock[%d] next time."
+                            , stub, stub->_sock_fd);
+                }
+                else if ( cnt < size )
                 {
                     flag = 1;
                     DEBUG("detached stub, need to notify.");
@@ -1325,7 +1333,12 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
                     || (stub->_status & SOCK_IDLE) /* idle */
                     )
             {
-                if ( cnt < size )
+                if (!can_gen_notify)
+                {
+                    DEBUG("cannot gen nofity, notify stub[%p] sock[%d] error next time."
+                            , stub, stub->_sock_fd);
+                }
+                else if ( cnt < size )
                 {
                     flag = 1;
                     DEBUG("notify upper caller now.");
