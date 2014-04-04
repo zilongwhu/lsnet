@@ -46,13 +46,10 @@ static void __mp_init_page_size(void)
 typedef struct __page_head
 {
     __dlist_t _list;
-    uint16_t _cur_cnt;
-    uint16_t _total_cnt;
 } __page_head_t;
 
 typedef struct __elem_head
 {
-    __page_head_t *_page;
     __slist_t _list;
 } __elem_head_t;
 
@@ -78,7 +75,7 @@ mempool_t mp_init(size_t elem_size)
         WARNING("no mem left, calloc ret NULL");
         return NULL;
     }
-    res->_elem_size = elem_size + sizeof(void *); /* extra _page pointer */
+    res->_elem_size = elem_size;
     if ( res->_elem_size % sizeof(void *) != 0 ) /* need padding */
     {
         res->_elem_size /= sizeof(void *);
@@ -100,7 +97,6 @@ void *mp_alloc(mempool_t mp)
     {
         __slist_t *cur = SLIST_NEXT(&h->_free_list);
         SLIST_REMOVE(&h->_free_list, cur);
-        ++GET_OWNER(cur, __elem_head_t, _list)->_page->_cur_cnt;
         return cur;
     }
 
@@ -126,8 +122,6 @@ void *mp_alloc(mempool_t mp)
 
     __page_head_t *page_head = (__page_head_t *)page;
     DLIST_INIT(&page_head->_list);
-    page_head->_cur_cnt = 0;
-    page_head->_total_cnt = num;
 
     DLIST_INSERT_A(&h->_pages, &page_head->_list);
 
@@ -137,7 +131,6 @@ void *mp_alloc(mempool_t mp)
     for ( i = 0; i < num; ++i )
     {
         pe = (__elem_head_t *)(pb + i * h->_elem_size);
-        pe->_page = page_head;
         SLIST_INIT(&pe->_list);
 
         SLIST_INSERT_A(&h->_free_list, &pe->_list);
@@ -161,28 +154,6 @@ void mp_free(mempool_t mp, void *ptr)
     SLIST_INIT(&pe->_list);
 
     SLIST_INSERT_A(&h->_free_list, &pe->_list);
-
-    __page_head_t *page = pe->_page;
-    if ( 0 == --page->_cur_cnt )
-    {
-        __slist_t *pre = &h->_free_list;
-        __slist_t *cur = SLIST_NEXT(pre);
-        while (cur)
-        {
-            if ( GET_OWNER(cur, __elem_head_t, _list)->_page == page )
-            {
-                SLIST_REMOVE(pre, cur);
-            }
-            else
-            {
-                pre = cur;
-            }
-            cur = SLIST_NEXT(pre);
-        }
-        DLIST_REMOVE(&page->_list);
-
-        free(page);
-    }
 }
 
 void mp_renew(mempool_t mp)
