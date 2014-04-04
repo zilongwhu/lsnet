@@ -66,7 +66,7 @@ void timer_destroy(mstimer_t *tm)
             DLIST_REMOVE(nxt);
         }
     }
-    for ( i = 0; i < 59; ++i )
+    for ( i = 0; i < 60; ++i )
     {
         ptr = &tm->_sec[i];
         while ( !DLIST_EMPTY(ptr) )
