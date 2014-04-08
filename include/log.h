@@ -19,6 +19,8 @@
 #ifndef __LOG_H__
 #define __LOG_H__
 
+#include <stdint.h>
+
 enum
 {
     LOG_LEVEL_DEBUG,
@@ -28,6 +30,13 @@ enum
     LOG_LEVEL_FATAL,
 };
 
+typedef struct __log_conf
+{
+    char _path_prefix[4096];
+    int32_t _max_log_length;
+} log_conf_t;
+
+int init_log(const log_conf_t *conf);
 void err_warn(int level, const char *format, ...);
 
 #define LOG_HELPER(level, format, args...) do {                           \
