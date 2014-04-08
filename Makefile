@@ -1,6 +1,24 @@
-liblsnet.so: src/*.c include/*.h
-	#gcc -g -Wall -fPIC -shared -Iinclude -DTIMER_CHECK -DLOG_LEVTL=0 -DDEBUG_EPEX src/error.c src/exnet.c src/hash.c src/log.c src/mempool.c src/timer.c src/utils.c -o liblsnet.so -lpthread
-	g++ -g -Wall -fPIC -shared -Iinclude -D__CPLUSPLUS -DTIMER_CHECK -DLOG_LEVTL=0 -DDEBUG_EPEX src/error.c src/exnet.c src/hash.c src/log.c src/mempool.c src/timer.c src/utils.c -o liblsnet.so -lpthread
+all: liblsnet.a
+
+headers=include/*.h
+
+error.o: src/error.c $(headers)
+	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
+exnet.o: src/exnet.c $(headers)
+	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
+hash.o: src/hash.c $(headers)
+	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
+log.o: src/log.c $(headers)
+	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
+mempool.o: src/mempool.c $(headers)
+	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
+timer.o: src/timer.c $(headers)
+	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
+utils.o: src/utils.c $(headers)
+	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
+
+liblsnet.a: error.o exnet.o hash.o log.o mempool.o timer.o utils.o
+	ar crs $@ $^
 
 clean:
-	rm liblsnet.so
+	rm -rf *.o liblsnet.a
