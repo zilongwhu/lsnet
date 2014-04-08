@@ -85,11 +85,11 @@ typedef void *epex_t;
 
 epex_t epex_open(int size);
 void epex_close(epex_t ptr);
-bool epex_attach(epex_t ptr, int sock_fd, void *user_arg, int ms);
+bool epex_attach(epex_t ptr, int sock_fd, void *user_arg, int ms); /* ms is max idle time */
 bool epex_detach(epex_t ptr, int sock_fd, void **p_user_arg);
 bool epex_listen(epex_t ptr, int sock_fd, void *user_arg);
 bool epex_listen2(epex_t ptr, int sock_fd, int backlog, void *user_arg);
-bool epex_connect(epex_t ptr, int sock_fd, struct sockaddr_in *addr, void *user_arg, int ms);
+bool epex_connect(epex_t ptr, int sock_fd, struct sockaddr_in *addr, void *user_arg, int connect_ms, int idle_ms);
 bool epex_enable_notify(epex_t ptr, int sock_fd);
 bool epex_disable_notify(epex_t ptr, int sock_fd);
 bool epex_read(epex_t ptr, int sock_fd, void *buf, size_t size, void *user_arg, int ms);

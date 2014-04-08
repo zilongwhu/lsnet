@@ -844,7 +844,7 @@ bool epex_listen2(epex_t ptr, int sock_fd, int backlog, void *user_arg)
     return epex_listen(h, sock_fd, user_arg);
 }
 
-bool epex_connect(epex_t ptr, int sock_fd, struct sockaddr_in *addr, void *user_arg, int ms)
+bool epex_connect(epex_t ptr, int sock_fd, struct sockaddr_in *addr, void *user_arg, int connect_ms, int idle_ms)
 {
     if ( NULL == ptr || NULL == addr || sock_fd < 0 )
     {
@@ -857,7 +857,7 @@ bool epex_connect(epex_t ptr, int sock_fd, struct sockaddr_in *addr, void *user_
         WARNING("invalid epex handle[%p].", h);
         return false;
     }
-    if ( !epex_attach(ptr, sock_fd, user_arg, ms) )
+    if ( !epex_attach(ptr, sock_fd, user_arg, idle_ms) )
     {
         WARNING("failed to attach sock[%d].", sock_fd);
         return false;
@@ -899,7 +899,7 @@ bool epex_connect(epex_t ptr, int sock_fd, struct sockaddr_in *addr, void *user_
     if ( is_ok )
     {
         /* send a empty write request */
-        if ( epex_op(NET_OP_CONNECT, ptr, sock_fd, NULL, 0, user_arg, ms, 1) )
+        if ( epex_op(NET_OP_CONNECT, ptr, sock_fd, NULL, 0, user_arg, connect_ms, 1) )
         {
             DEBUG("send connect request ok, sock[%d].", sock_fd);
             return true;
