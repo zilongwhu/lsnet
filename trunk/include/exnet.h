@@ -33,22 +33,37 @@ typedef enum
 
 enum
 {
+    /*
+     * NET_OP_NOTIFY is used by framework when:
+     *   1. the user has detached a socket by calling epex_detach (with NET_EDETACHED)
+     *   2. some error ocurred on socket (with NET_ERROR)
+     *   3. socket becomes idle (with NET_EIDLE)
+     */
     NET_OP_NOTIFY = 1,
     NET_OP_READ,
     NET_OP_WRITE,
+    /*
+     * NET_OP_ACCEPT is used by framework when listen socket becomes readable (with NET_DONE)
+     */
     NET_OP_ACCEPT,
+    /*
+     * call epex_connect to connect socket to a sockaddr:
+     *   1. connect ok, notified with NET_OP_CONNECT & NET_DONE
+     *   2. connect fail, notified with NET_OP_CONNECT & NET_ERROR
+     *   3. connect timeout, notified with NET_OP_CONNECT & NET_ETIMEOUT
+     */
     NET_OP_CONNECT,
 };
 
 enum
 {
-    NET_DONE = 1,
-    NET_PART_DONE,
-    NET_EDETACHED,
-    NET_ETIMEOUT,
-    NET_EIDLE,
-    NET_ECLOSED,
-    NET_ERROR,
+    NET_DONE = 1,                               /* request has been processed successfully */
+    NET_PART_DONE,                              /* has read some data, for read request only */
+    NET_EDETACHED,                              /* socket is detached by user */
+    NET_ETIMEOUT,                               /* task is timeout */
+    NET_EIDLE,                                  /* socket becomes idle */
+    NET_ECLOSED,                                /* peer has closed socket */
+    NET_ERROR,                                  /* error occured */
 };
 
 typedef struct _netresult
@@ -62,8 +77,8 @@ typedef struct _netresult
     size_t _curpos;
     size_t _size;
 
-    void *_user_ptr;
-    void *_user_ptr2;
+    void *_user_ptr;                            /* task specific user data */
+    void *_user_ptr2;                           /* stub specific user data */
 } netresult_t;
 
 typedef void *epex_t;

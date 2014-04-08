@@ -980,7 +980,7 @@ ssize_t epex_poll(epex_t ptr, netresult_t *results, size_t size)
     do
     {
         ret = epoll_wait(h->_ep_fd, h->_events, h->_evt_size, 0);
-    } while (ret<0 && EINTR == errno);
+    } while (ret < 0 && EINTR == errno);
     int i;
     int flag;
     int work_flag = 0;
