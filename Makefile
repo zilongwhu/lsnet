@@ -2,19 +2,19 @@ all: liblsnet.a tester
 
 headers=include/*.h
 
-error.o: src/error.c $(headers)
+error.o: src/error.c
 	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
-exnet.o: src/exnet.c $(headers)
+exnet.o: src/exnet.c
 	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
-hash.o: src/hash.c $(headers)
+hash.o: src/hash.c
 	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
-log.o: src/log.c $(headers)
+log.o: src/log.c
 	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
-mempool.o: src/mempool.c $(headers)
+mempool.o: src/mempool.c
 	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
-timer.o: src/timer.c $(headers)
+timer.o: src/timer.c
 	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
-utils.o: src/utils.c $(headers)
+utils.o: src/utils.c
 	gcc -c -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX $^
 
 liblsnet.a: error.o exnet.o hash.o log.o mempool.o timer.o utils.o
