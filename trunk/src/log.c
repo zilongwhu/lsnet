@@ -39,7 +39,7 @@ static const char *const s_level_name[] =
 };
 
 static log_conf_t g_log_conf = { "./lsnet", 4096 };
-static tm g_last_cut_time;
+static struct tm g_last_cut_time;
 
 int init_log(const log_conf_t *conf)
 {
