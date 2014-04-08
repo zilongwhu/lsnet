@@ -1,4 +1,4 @@
-all: liblsnet.a
+all: liblsnet.a tester
 
 headers=include/*.h
 
@@ -20,5 +20,8 @@ utils.o: src/utils.c $(headers)
 liblsnet.a: error.o exnet.o hash.o log.o mempool.o timer.o utils.o
 	ar crs $@ $^
 
+tester: liblsnet.a test/timer_tester.c
+	gcc -g -Wall -Iinclude -DLOG_LEVEL=0 -DDEBUG_EPEX test/timer_tester.c -lpthread -Xlinker "-(" liblsnet.a -Xlinker "-)" -o $@
+
 clean:
-	rm -rf *.o liblsnet.a
+	rm -rf *.o liblsnet.a tester
