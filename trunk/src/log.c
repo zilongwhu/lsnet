@@ -177,7 +177,11 @@ void err_warn(int level, const char *format, ...)
                      || g_last_cut_time.tm_hour != result.tm_hour)
                     ) /* check again */
             {
-                if (s_log_fd >= 0) /* cut by hour */
+                if (s_log_fd < 0) /* init */
+                {
+                    g_last_cut_time = result;
+                }
+                else /* cut by hour */
                 {
                     snprintf(s_pathfile_1, sizeof s_pathfile_1, "%s.log", g_log_conf._path_prefix);
                     snprintf(s_pathfile_2, sizeof s_pathfile_2,
