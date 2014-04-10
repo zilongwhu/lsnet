@@ -18,6 +18,11 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include <sys/time.h>
 #include "dlist.h"
@@ -56,5 +61,9 @@ int timer_del(mstimer_t *tm, struct __timer_unit *unit);
 
 void timer_timeout(mstimer_t *tm);
 struct __timer_unit *timer_next(mstimer_t *tm);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

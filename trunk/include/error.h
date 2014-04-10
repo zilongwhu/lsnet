@@ -18,6 +18,15 @@
 #ifndef __ERROR_T_H__
 #define __ERROR_T_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 const char *strerror_t(int errnum);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

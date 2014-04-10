@@ -18,11 +18,20 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #define SAFE_CLOSE(fd)    do { } while ( fd >= 0 && close(fd) < 0 && EINTR == errno )
 
 #define GET_OWNER(ptr, type, mem) ((type *)(((char *)(ptr)) - (long)&((type *)(0xF0))->mem + 0xF0))
 
 int set_nonblock(int fd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

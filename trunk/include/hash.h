@@ -19,6 +19,11 @@
 #ifndef __HASH_H__
 #define __HASH_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
 #include "slist.h"
@@ -71,5 +76,9 @@ int ex_hash_seek(__ex_hash_t *ptr, const void *key, void *value);
 #define EX_HASH_DEL_FAIL -1
 
 int ex_hash_del(__ex_hash_t *ptr, const void *key, void *value);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

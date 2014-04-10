@@ -18,6 +18,11 @@
 #ifndef __MEMPOOL_H__
 #define __MEMPOOL_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stddef.h>
 
 typedef void *mempool_t;
@@ -27,5 +32,9 @@ void *mp_alloc(mempool_t mp);
 void mp_free(mempool_t mp, void *ptr);
 void mp_renew(mempool_t mp);
 void mp_close(mempool_t mp);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

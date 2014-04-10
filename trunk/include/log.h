@@ -19,6 +19,11 @@
 #ifndef __LOG_H__
 #define __LOG_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 
 enum
@@ -80,5 +85,9 @@ void err_warn(int level, const char *format, ...);
 #endif
 
 #define FATAL(format, args...)        LOG_HELPER(LOG_LEVEL_FATAL, format, ##args)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
