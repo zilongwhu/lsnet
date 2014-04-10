@@ -19,6 +19,11 @@
 #ifndef __SLIST_H__
 #define __SLIST_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct __slist
 {
     struct __slist *_next;
@@ -41,5 +46,9 @@ typedef struct __slist
     (pre)->_next = (cur)->_next;                                          \
     SLIST_INIT(cur);                                                      \
 } while(0)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

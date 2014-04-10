@@ -19,6 +19,11 @@
 #ifndef __DLIST_H__
 #define __DLIST_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct __dlist
 {
     struct __dlist *_prev;
@@ -66,5 +71,9 @@ typedef struct __dlist
         ++(num);                                                          \
     }                                                                     \
 } while(0)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

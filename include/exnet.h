@@ -18,12 +18,17 @@
 #ifndef __EXNET_H__
 #define __EXNET_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <unistd.h>
 #include <stdint.h>
 #include <netinet/in.h>
 #include "nethead.h"
 
-#ifndef __CPLUSPLUS
+#ifndef __cplusplus
 typedef enum
 {
     false,
@@ -96,5 +101,9 @@ bool epex_read(epex_t ptr, int sock_fd, void *buf, size_t size, void *user_arg, 
 bool epex_read_any(epex_t ptr, int sock_fd, void *buf, size_t size, void *user_arg, int ms);
 bool epex_write(epex_t ptr, int sock_fd, const void *buf, size_t size, void *user_arg, int ms);
 ssize_t epex_poll(epex_t ep, netresult_t *results, size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

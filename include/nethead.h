@@ -19,6 +19,11 @@
 #ifndef __NET_HEADER_H__
 #define __NET_HEADER_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 
 #define MAGIC_NUM   (0x11190309)
@@ -30,5 +35,9 @@ typedef struct net_head_s
     uint32_t _body_len;
     uint32_t _reserved;
 } net_head_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
