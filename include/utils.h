@@ -18,6 +18,8 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include <unistd.h>
+
 #ifdef __cplusplus
 extern "C"
 {
