@@ -62,10 +62,10 @@ int main(int argc, char *argv[])
 				if ( f )
 				{
 					printf("--------------------------------------------------------------------------------\n");
-					printf("now: %llu, count: %u\n", timer->_now, timer->_count + 1);
+					printf("now: %lu, count: %u\n", timer->_now, timer->_count + 1);
 					f = 0;
 				}
-				printf("#    %llu\n", (uint64_t)TV2MS(unit->_tv));
+				printf("#    %lu\n", (uint64_t)TV2MS(unit->_tv));
 				free(unit);
 			}
 		}
